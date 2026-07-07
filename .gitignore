@@ -1,0 +1,32 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Dependencies and caches
+node_modules/
+.npm/
+.cache/
+coverage/
+
+# LeadPulse research data and exports
+Saved Sessions/
+Saved Sessions/**
+LeadPulse_Session_*.json
+LeadPulse_Audit_*.json
+LeadPulse_*.csv
+*.leadpulse-session.json
+exports/
+private-data/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
