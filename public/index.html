@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="LeadPulse is a privacy-first local tool for comparing Google and AI business recommendations.">
+  <title>LeadPulse — AI Visibility Gap Finder</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="brand-block">
+      <div class="brand-mark" aria-hidden="true">LP</div>
+      <div>
+        <h1>LeadPulse</h1>
+        <p>Local AI visibility research and outreach preparation</p>
+      </div>
+    </div>
+    <div id="provider-status" class="status-list" aria-live="polite">
+      <span class="badge neutral">Checking local server…</span>
+    </div>
+  </header>
+
+  <main id="main-content" class="page-shell">
+    <section class="notice security-notice" aria-labelledby="privacy-heading">
+      <div>
+        <h2 id="privacy-heading">Privacy-first local mode</h2>
+        <p>API keys remain on the local Node server. Workspace data stays in this tab's memory unless you explicitly export it. Nothing is automatically uploaded to LeadPulse or persisted in the browser.</p>
+      </div>
+      <button id="clear-workspace" class="button danger" type="button">Clear workspace</button>
+    </section>
+
+    <section class="panel" aria-labelledby="search-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 1</p>
+          <h2 id="search-heading">Run a visibility search</h2>
+        </div>
+        <button id="run-search" class="button primary" type="button">Run comparison</button>
+      </div>
+
+      <div class="form-grid search-grid">
+        <label class="field field-wide">
+          <span>Customer search prompt</span>
+          <input id="search-query" type="text" maxlength="240" autocomplete="off" placeholder="Best financial adviser Brisbane">
+          <small>Use the same query a prospective customer might ask Google, ChatGPT, or Gemini.</small>
+        </label>
+
+        <label class="field">
+          <span>Google pages</span>
+          <select id="search-pages">
+            <option value="1">1 page</option>
+            <option value="2">2 pages</option>
+            <option value="3" selected>3 pages</option>
+            <option value="5">5 pages</option>
+            <option value="10">10 pages</option>
+          </select>
+          <small>More pages use more Serper requests.</small>
+        </label>
+      </div>
+
+      <div id="search-progress" class="progress-line" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="responses-heading">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Step 2</p>
+          <h2 id="responses-heading">Review source responses</h2>
+        </div>
+        <button id="compare-results" class="button secondary" type="button">Rebuild comparison</button>
+      </div>
+
+      <div class="response-grid">
+        <article class="response-card">
+          <div class="card-heading">
+            <h3>Google businesses</h3>
+            <span id="google-count" class="badge neutral">0</span>
+          </div>
+          <div id="google-results" class="result-list empty-state">Run a search to load businesses.</div>
+
+          <form id="manual-result-form" class="manual-row">
+            <input id="manual-name" type="text" maxlength="200" placeholder="Business name" aria-label="Business name">
+            <input id="manual-url" type="url" maxlength="2000" placeholder="https://example.com" aria-label="Business website">
+            <button class="button small secondary" type="submit">Add</button>
+          </form>
+        </article>
+
+        <article class="response-card">
+          <div class="card-heading">
+            <h3>ChatGPT response</h3>
+            <span id="openai-count" class="badge neutral">0 names</span>
+          </div>
+          <label class="field">
+            <span class="sr-only">ChatGPT response</span>
+            <textarea id="openai-response" rows="14" placeholder="The configured local server can populate this automatically. You can also paste a response manually."></textarea>
+          </label>
+        </article>
+
+        <article class="response-card">
+          <div class="card-heading">
+            <h3>Gemini response</h3>
+            <span id="gemini-count" class="badge neutral">0 names</span>
+          </div>
+          <label class="field">
+            <span class="sr-only">Gemini response</span>
+            <textarea id="gemini-response" rows="14" placeholder="The configured local server can populate this automatically. You can also paste a response manually."></textarea>
+          </label>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="comparison-heading">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Step 3</p>
+          <h2 id="comparison-heading">Visibility gaps and contacts</h2>
+        </div>
+        <div class="button-row">
+          <button id="find-all-contacts" class="button secondary" type="button">Find all contacts</button>
+          <button id="draft-all" class="button secondary" type="button">Draft all</button>
+          <button id="export-csv" class="button secondary" type="button">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="summary-strip" id="comparison-summary" aria-live="polite">
+        <span><strong>0</strong> Google businesses</span>
+        <span><strong>0</strong> visibility gaps</span>
+        <span><strong>0</strong> contact candidates</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Business</th>
+              <th>Google</th>
+              <th>ChatGPT</th>
+              <th>Gemini</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="lead-table-body">
+            <tr><td colspan="7" class="table-empty">No comparison has been built yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="settings-heading">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Step 4</p>
+          <h2 id="settings-heading">Outreach settings</h2>
+        </div>
+        <div class="button-row">
+          <button id="export-session" class="button secondary" type="button">Export session</button>
+          <button id="import-session" class="button secondary" type="button">Import session</button>
+          <input id="session-file" type="file" accept="application/json,.json" hidden>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label class="field">
+          <span>Sender name</span>
+          <input id="sender-name" type="text" maxlength="120" placeholder="Your name">
+        </label>
+        <label class="field">
+          <span>Sender company</span>
+          <input id="sender-company" type="text" maxlength="160" placeholder="Your company">
+        </label>
+        <label class="field field-wide">
+          <span>Subject template</span>
+          <input id="subject-template" type="text" maxlength="240" value="{{COMPANY}} and AI search visibility">
+          <small>Available variables: {{COMPANY}}, {{PROMPT}}, {{MISSING_AI}}, {{SENDER}}, {{YOUR_COMPANY}}.</small>
+        </label>
+        <label class="field field-wide">
+          <span>Message template</span>
+          <textarea id="message-template" rows="9">Hi {{COMPANY}},
+
+I searched “{{PROMPT}}” and noticed that your business did not appear in {{MISSING_AI}}'s response, despite appearing in Google results.
+
+I have prepared a short visibility review showing the gap and the areas that may influence AI recommendations. Would it be useful if I sent it through?
+
+Regards,
+{{SENDER}}
+{{YOUR_COMPANY}}</textarea>
+          <small>Generated drafts require human review. Do not make claims that you have not verified.</small>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="drafts-heading">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Prepared messages</p>
+          <h2 id="drafts-heading">Draft queue</h2>
+        </div>
+        <span id="draft-count" class="badge neutral">0 drafts</span>
+      </div>
+      <div id="draft-list" class="draft-list empty-state">No messages have been drafted.</div>
+    </section>
+
+    <section class="panel log-panel" aria-labelledby="logs-heading">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Local diagnostics</p>
+          <h2 id="logs-heading">Activity log</h2>
+        </div>
+        <button id="clear-logs" class="button small secondary" type="button">Clear log</button>
+      </div>
+      <div id="activity-log" class="activity-log" aria-live="polite">No activity yet.</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>LeadPulse runs locally. Provider requests are made by your own server using your own credentials.</p>
+  </footer>
+</body>
+</html>
